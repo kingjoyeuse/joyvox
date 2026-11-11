@@ -155,7 +155,7 @@ func setFonts() {
 	old := []uintptr{app.font, app.titleFont, app.logFont, app.smallFont, app.smallItalicFont}
 	app.font = newFont(sc(15), 400, "Segoe UI")
 	app.titleFont = newFont(sc(30), 600, "Segoe UI")
-	app.logFont = newFont(sc(13), 400, "Consolas")
+	app.logFont = newFont(sc(11), 400, "Consolas")
 	app.smallFont = newFont(sc(12), 400, "Segoe UI")
 	app.smallItalicFont = newFontStyle(sc(12), 400, true, "Segoe UI")
 	for id, h := range app.controls {
@@ -207,8 +207,8 @@ func layout() {
 	bySize := measureText(app.window, app.smallItalicFont, "by Joyeuse")
 	titleW := (int(titleSize.X)*96 + app.dpi - 1) / app.dpi
 	place(app.labels["title"], 88, 14, titleW+2, 43)
-	move(app.controls[idByline], sc(88)+int(titleSize.X)+sc(10), sc(14)+int(titleSize.Y-bySize.Y), int(bySize.X)+sc(4), int(bySize.Y)+sc(3))
-	place(app.labels["tagline"], 88, 52, inner-64, 22)
+	move(app.controls[idByline], sc(88)+int(titleSize.X)+sc(10), sc(9)+int(titleSize.Y-bySize.Y), int(bySize.X)+sc(4), int(bySize.Y)+sc(3))
+	place(app.labels["tagline"], 88, 55, inner-64, 22)
 
 	app.dependencyRect = Rect{int32(sc(24)), int32(sc(92)), int32(sc(w - 24)), int32(sc(238))}
 	place(app.controls[idDeps], 38, 105, inner-292, 23)
