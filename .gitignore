@@ -1,0 +1,46 @@
+# Local app data, Python, downloaded models, recordings and credentials
+/.joyvox/
+/.venv/
+/venv/
+/models/
+/recordings/
+/logs/
+/joyvox_config.cfg
+/joyvox_dictionary.cfg
+/joyvox_diagnostics.txt
+/.env
+/.env.*
+*.log
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Generated native payload and build/release output
+/gui/payload.h
+/gui/payload.rc
+/gui/generated_payload.h
+/gui/generated_payload.hpp
+/gui/generated_payload.rc
+/build/
+/dist/
+/release/
+/JoyVox.exe
+/joyvox.exe
+*.obj
+*.o
+*.res
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# Local editor state
+/.vs/
+/.vscode/
+*.user
+*.suo
+
+# Native Go build payload and Windows resource object
+/gui/payload/
+/gui/*.syso
+/joyvox_config.cfg.*.bak

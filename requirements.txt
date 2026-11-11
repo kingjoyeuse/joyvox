@@ -1,0 +1,17 @@
+# JoyVox 4.2.1: 64-bit Windows 10/11, CPython 3.10-3.12.
+# Installed Python is reused through an isolated local environment.
+# Pin application-facing dependencies; install Windows binary wheels only.
+faster-whisper==1.2.1
+ctranslate2==4.8.5
+# faster-whisper 1.2.1 uses av.open(metadata_errors=...), removed in PyAV 19.
+av==18.1.0; python_version >= '3.11'
+av==16.1.0; python_version < '3.11'
+numpy==2.3.5; python_version >= '3.11'
+numpy==2.2.6; python_version < '3.11'
+scipy==1.17.0; python_version >= '3.11'
+scipy==1.15.3; python_version < '3.11'
+PyAudio==0.2.14
+pynput==1.8.1
+pygame==2.6.1
+# pygame's resource helpers still use pkg_resources.
+setuptools==80.9.0

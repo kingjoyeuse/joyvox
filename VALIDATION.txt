@@ -1,0 +1,25 @@
+JoyVox 4.2.4 validation
+
+Performed in this build environment:
+- Cross-compiled native Windows AMD64 executable with Go 1.23.2.
+- 12 Go launcher logic tests pass (including subcases for GPU/CPU Auto states,
+  canonical model configuration values, required-setup state, five-column layout).
+- 81 Python backend/integration tests pass.
+- Windows test binary cross-compiles.
+- PE subsystem/machine, icon resources, embedded backend version and manifest checked.
+- Portable/source ZIP integrity, hashes, and source manifest checked before delivery.
+- Recognition requirements and runtime installer are unchanged from 4.2.3.
+
+Not performed here:
+- Native Windows GUI rendering and interactive microphone/CUDA/game validation.
+- Installer downloads or a GitHub publication.
+
+Windows user-facing checks:
+1. Check that NVIDIA text is light, both dropdowns are cerulean, and the outlined
+   status box contains autoexec status directly beneath dependencies.
+2. On a working NVIDIA setup: Auto shows large-v3-turbo and Install is grey.
+3. With requested NVIDIA support unavailable: Install turns blue; after repair
+   and verification, Auto and button colors refresh without restarting the app.
+4. Click a bind: capture, cancel and save work; saving leaves normal status intact.
+5. Check all five labels/buttons at the default and minimum window widths.
+6. Open Advanced config; confirm dictionary/model paths and Browse remain available.

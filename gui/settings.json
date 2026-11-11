@@ -1,0 +1,272 @@
+[
+  [
+    "STT_KINGPIN_EXE",
+    "Game executable",
+    "",
+    "The game executable. A custom renamed engine is allowed. Its filename is added to the focus allow-list."
+  ],
+  [
+    "STT_OUTPUT_PATH",
+    "Game / mod output folder",
+    "",
+    "The game data/mod folder. Defaults to main for Kingpin.exe and baseq2 for other executables. Choose another folder for a mod or renamed Kingpin engine."
+  ],
+  [
+    "STT_DICTIONARY_FILE",
+    "Correction/custom dictionary",
+    "joyvox_dictionary.cfg",
+    "A UTF-8 file of wrong phrase=correct phrase entries. Phrase matching is case-insensitive."
+  ],
+  [
+    "STT_MODEL_CACHE",
+    "Downloaded voice recognition model folder",
+    ".joyvox/models",
+    "Where speech models are cached. Relative paths are relative to this JoyVox folder. Leave blank for the backend default cache."
+  ],
+  [
+    "STT_LISTEN",
+    "Push-to-talk key",
+    "mouse4",
+    "Hold to record; release to transcribe. Examples: mouse4, mouse5, a letter, or an F-key."
+  ],
+  [
+    "STT_KEY_AUTO",
+    "Select public chat",
+    "f5",
+    "Selects public chat for the next recording. May be blank to disable this shortcut."
+  ],
+  [
+    "STT_TEAMKEY_AUTO",
+    "Select team chat",
+    "f6",
+    "Selects team chat for the next recording. May be blank to disable this shortcut."
+  ],
+  [
+    "STT_KEY",
+    "Send public chat",
+    "j",
+    "Manually sends prepared text to public chat. Also used for automatic public delivery."
+  ],
+  [
+    "STT_TEAMKEY",
+    "Send team chat",
+    "k",
+    "Manually sends prepared text to team chat. Also used for automatic team delivery."
+  ],
+  [
+    "STT_OUTPUT_FILE",
+    "Speech output filename",
+    "joyvoxinput.cfg",
+    "A plain .cfg filename, without folders, inside the game / mod output folder."
+  ],
+  [
+    "STT_EXEC_FILE",
+    "Game bindings filename",
+    "joyvox.cfg",
+    "Game bindings .cfg filename. Install / repair adds exec followed by this filename to autoexec.cfg without overwriting other commands."
+  ],
+  [
+    "STT_AUDIO_INPUT_INDEX",
+    "Microphone device",
+    "auto",
+    "auto uses the Windows default. The GUI lists microphone names even before setup. name: selects a named input; numeric indices choose a specific PortAudio device."
+  ],
+  [
+    "STT_WHISPER_MODEL",
+    "Recognition model",
+    "auto",
+    "auto selects large-v3-turbo on NVIDIA and small.en on CPU. A supported model name or converted model directory is also accepted."
+  ],
+  [
+    "STT_CPU_MODEL",
+    "CPU fallback model",
+    "small.en",
+    "The model used when automatic recognition selects the CPU."
+  ],
+  [
+    "STT_WHISPER_DEVICE",
+    "Recognition device",
+    "auto",
+    "auto tries NVIDIA CUDA and falls back to CPU with an explanation. cuda requires NVIDIA support; cpu forces CPU inference."
+  ],
+  [
+    "STT_WHISPER_COMPUTE_TYPE",
+    "Model precision",
+    "auto",
+    "auto uses a supported default. int8_float16 can reduce NVIDIA memory use; int8 is suitable for CPU."
+  ],
+  [
+    "STT_LANGUAGE",
+    "Speech language",
+    "en",
+    "Whisper language code. en is English and avoids automatic language guessing for short clips."
+  ],
+  [
+    "STT_BEAM_SIZE",
+    "Recognition search width",
+    "5",
+    "Integer from 1 to 10. Higher search widths may improve accuracy but require more processing."
+  ],
+  [
+    "STT_PROMPT",
+    "Recognition context",
+    "Push forward and cover me. Watch the stairs. I need health, armor, and ammo. Nice shot, good game. Quake II, Kingpin, deathmatch, capture the flag, Bagman, cash bag, safe, rocket launcher, railgun.",
+    "Example wording and game vocabulary, not instructions to the model. Add actual player names and terms you use; keep it concise."
+  ],
+  [
+    "STT_HOTWORDS",
+    "Names and vocabulary",
+    "Kingpin, Bagman, cash bag, safe, team",
+    "Comma-separated player names and game terms. Dictionary corrections also supply vocabulary hints."
+  ],
+  [
+    "STT_VAD_FILTER",
+    "Filter silence / background noise",
+    "yes",
+    "Use speech activity detection to reduce guesses from silence and non-speech audio."
+  ],
+  [
+    "STT_MIN_AUDIO_LENGTH",
+    "Minimum button hold, seconds",
+    "0.15",
+    "Ignore shorter presses. Does not count pre-roll or release padding. Range: 0 to 3 seconds."
+  ],
+  [
+    "STT_CPU_THREADS",
+    "CPU recognition threads",
+    "4",
+    "Integer from 1 to 64. More threads are not always faster, particularly while a game is running."
+  ],
+  [
+    "STT_MODEL_WARMUP",
+    "Warm the model before ready",
+    "yes",
+    "Warm CPU recognition before READY. NVIDIA always performs an inference check before READY."
+  ],
+  [
+    "STT_CUDA_DLL_PATH",
+    "Extra NVIDIA DLL folders",
+    "",
+    "Optional semicolon-separated CUDA/cuDNN runtime folders. Usually leave blank when using this launcher's installer."
+  ],
+  [
+    "STT_PRE_ROLL_MS",
+    "Audio before press, milliseconds",
+    "150",
+    "A small RAM-only buffer protects the first consonant. 0 to 1000 ms. Idle microphone audio is never saved."
+  ],
+  [
+    "STT_TAIL_MS",
+    "Audio after release, milliseconds",
+    "120",
+    "Protect the final consonant by collecting a short tail. 0 to 1000 ms."
+  ],
+  [
+    "STT_MAX_RECORD_SECONDS",
+    "Maximum recording, seconds",
+    "30",
+    "Stop a long hold automatically. Release the button before recording again. Range: 1 to 120 seconds."
+  ],
+  [
+    "STT_QUEUE_SIZE",
+    "Waiting utterances",
+    "3",
+    "Maximum recordings waiting behind the one being recognized. Range: 1 to 10."
+  ],
+  [
+    "STT_SENTENCECASE",
+    "Capitalize first letter",
+    "no",
+    "Capitalize the first letter of the prepared message."
+  ],
+  [
+    "STT_CAPITALIZE",
+    "Preserve name capitalization",
+    "no",
+    "Keep proper-name capitalization. When disabled, mixed-case words are lowercased; acronyms remain."
+  ],
+  [
+    "STT_ENDWITHPERIOD",
+    "Add final period",
+    "no",
+    "Append punctuation when needed. When disabled, a single trailing period is removed."
+  ],
+  [
+    "STT_ALLOWEXCLAMATION",
+    "Allow exclamation marks",
+    "no",
+    "Keep exclamation marks. When disabled, they become sentence breaks."
+  ],
+  [
+    "STT_ASCII_ONLY",
+    "Use classic game characters",
+    "yes",
+    "Transliterate Latin accents and use ASCII for the original Kingpin font."
+  ],
+  [
+    "STT_AUTO_KEY",
+    "Automatically send text",
+    "yes",
+    "Press the selected game chat key after recognition. Disable to send manually with the public/team keys."
+  ],
+  [
+    "STT_CLEAR_AFTER_SEND",
+    "Clear after sending",
+    "yes",
+    "Reset both output aliases after a send, preventing accidental repeats."
+  ],
+  [
+    "STT_CLEAR_DELAY",
+    "Clear delay, seconds",
+    "1.0",
+    "Delay before clearing sent output. Range: 0.2 to 10 seconds. Newer output is protected from older clears."
+  ],
+  [
+    "STT_REQUIRE_GAME_FOCUS",
+    "Only auto-send to the focused game",
+    "yes",
+    "Check the foreground executable before simulating a send key. Prepared text remains available if the game is not focused."
+  ],
+  [
+    "STT_GAME_EXES",
+    "Recognized game executable names",
+    "kingpin.exe,kingpinx.exe,kingpin2.exe,kingpin_x64.exe",
+    "Comma-separated executable filenames allowed for automatic delivery. The selected game executable is included automatically."
+  ],
+  [
+    "SFX_ENABLED",
+    "Enable sound effects",
+    "yes",
+    "Master switch for JoyVox's microphone and recognition sounds."
+  ],
+  [
+    "SFX_MIC_ONOFF",
+    "Microphone on/off sounds",
+    "yes",
+    "Play feedback when push-to-talk begins and finishes."
+  ],
+  [
+    "SFX_TRANSCRIBE_SUCCESS",
+    "Recognition success sound",
+    "yes",
+    "Play feedback when speech is recognized. Sounds are suppressed during capture."
+  ],
+  [
+    "SFX_TRANSCRIBE_FAIL",
+    "Recognition failure sound",
+    "yes",
+    "Play feedback for empty speech or recognition errors. Sounds are suppressed during capture."
+  ],
+  [
+    "STT_SAVE_RECORDINGS",
+    "Save the latest diagnostic clip",
+    "no",
+    "Opt-in: save only the most recent PTT recording and result to help diagnose recognition errors. Idle audio is never saved."
+  ],
+  [
+    "STT_RECORDINGS_PATH",
+    "Diagnostic recording folder",
+    "recordings",
+    "Destination for the latest optional diagnostic clip and result; files are overwritten each utterance."
+  ]
+]

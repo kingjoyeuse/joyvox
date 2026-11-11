@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ogg binary
+*.ico binary
+*.png binary
+*.exe binary
+*.zip binary
+
+*.go text eol=lf
+*.json text eol=lf
+*.ps1 text eol=lf
