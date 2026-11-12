@@ -44,3 +44,5 @@ __pycache__/
 /gui/payload/
 /gui/*.syso
 /joyvox_config.cfg.*.bak
+/JoyVox - Latest Build.lnk
+/JoyVox-dev.exe

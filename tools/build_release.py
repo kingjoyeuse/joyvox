@@ -151,7 +151,7 @@ def source_manifest(version: str):
                 continue
             if path.suffix.lower() in ('.py', '.go', '.cpp', '.json', '.manifest', '.ps1', '.cmd', '.bat', '.yml', '.yaml', '.cfg', '.ogg', '.ico'):
                 files.append(path)
-    for name in ('VERSION', 'requirements.txt', 'go.mod', 'go.sum', 'README.md', 'RELEASING.md',
+    for name in ('AGENTS.md', 'VERSION', 'requirements.txt', 'go.mod', 'go.sum', 'README.md', 'RELEASING.md',
                  'RELEASE_NOTES.md', 'NOTICE.md', '.gitignore', '.gitattributes',
                  'Publish-to-GitHub.cmd', 'CHANGELOG.md'):
         if (ROOT / name).is_file():

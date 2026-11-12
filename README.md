@@ -188,7 +188,7 @@ service. Downloading setup packages and uncached models needs Internet access.
 
 Double-click **Publish-to-GitHub.cmd** in the complete source kit to publish
 version **v4.2.4** with the prepared release ZIP/checksums. It defaults to a private
-`kingpin-joyvox` repository under the signed-in account. Nothing is published by
+`joyvox` repository under the signed-in account. Nothing is published by
 opening the app. Live settings, dictionaries, runtime files, models and recordings
 are excluded. See [RELEASING.md](RELEASING.md) for the existing publication flow.
 

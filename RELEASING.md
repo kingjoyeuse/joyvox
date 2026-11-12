@@ -13,7 +13,7 @@ then finds Git and GitHub CLI, downloading official portable copies into
 If GitHub CLI is not signed in, complete its browser sign-in; publication then
 continues.
 
-The default destination is **the authenticated account / kingpin-joyvox**, with
+The default destination is **the authenticated account / joyvox**, with
 **private** visibility for a new repository. The script stages an explicit list
 of source files, creates a source commit if needed, pushes `main` and the
 version tag, and publishes a release with:
@@ -35,7 +35,7 @@ credential configuration.
 From Command Prompt in the source folder:
 
 ```bat
-Publish-to-GitHub.cmd -Repository YOUR-ACCOUNT/kingpin-joyvox -Visibility public
+Publish-to-GitHub.cmd -Repository YOUR-ACCOUNT/joyvox -Visibility public
 ```
 
 `-Repository` also accepts just a repository name under the authenticated account.
@@ -114,3 +114,11 @@ not create releases automatically, so it does not race the one-click publisher.
 A rebuilt executable may differ byte-for-byte because compiler versions or build
 metadata differ. Publish a new version for a changed binary instead of replacing
 the asset of an existing version.
+
+### Local development build
+
+Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-dev.ps1`.
+This installs a checksum-verified Go toolchain under `.joyvox/toolchains` when needed,
+runs launcher tests, and builds `JoyVox-dev.exe` beside the existing launcher.
+Open `JoyVox - Latest Build.lnk` after closing the current launcher.
+Published release files are unchanged.

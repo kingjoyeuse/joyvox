@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)?$')]
-    [string]$Repository = 'kingpin-joyvox',
+    [string]$Repository = 'joyvox',
     [ValidateSet('private', 'public')]
     [string]$Visibility = 'private',
     [switch]$NoBrowser
@@ -61,7 +61,7 @@ function Test-SourcePath([string]$Path) {
     if ($Path -match '(^|/)(\.\.?|\.joyvox|\.venv|__pycache__|recordings|models)(/|$)') { return $false }
     if ($Path -match '^gui/(?:payload/|(?:generated_)?payload\.(?:h|hpp|rc)$)') { return $false }
     return (
-        $Path -match '^(?:README\.md|RELEASING\.md|RELEASE_NOTES\.md|NOTICE\.md|CHANGELOG\.md|VALIDATION\.txt|VERSION|go\.mod|go\.sum|requirements\.txt|Publish-to-GitHub\.cmd|\.gitignore|\.gitattributes)$' -or
+        $Path -match '^(?:AGENTS\.md|README\.md|RELEASING\.md|RELEASE_NOTES\.md|NOTICE\.md|CHANGELOG\.md|VALIDATION\.txt|VERSION|go\.mod|go\.sum|requirements\.txt|Publish-to-GitHub\.cmd|\.gitignore|\.gitattributes)$' -or
         $Path -match '^app/joyvox(?:_[a-zA-Z0-9_]+)?\.py$' -or
         $Path -match '^app/(?:mic_on|mic_off|trans_fail|trans_success)\.ogg$' -or
         $Path -match '^gui/[A-Za-z0-9_.-]+\.(?:go|json|cpp|h|hpp|rc|manifest|ico)$' -or
@@ -74,7 +74,7 @@ function Test-SourcePath([string]$Path) {
 
 function Get-SourcePaths {
     $candidates = @()
-    foreach ($name in @('README.md', 'RELEASING.md', 'RELEASE_NOTES.md', 'NOTICE.md',
+    foreach ($name in @('AGENTS.md', 'README.md', 'RELEASING.md', 'RELEASE_NOTES.md', 'NOTICE.md',
         'CHANGELOG.md', 'VALIDATION.txt', 'VERSION', 'go.mod', 'go.sum', 'requirements.txt', 'Publish-to-GitHub.cmd', '.gitignore', '.gitattributes')) {
         if (Test-Path -LiteralPath (Join-Path $Root $name) -PathType Leaf) { $candidates += $name }
     }
@@ -269,7 +269,9 @@ try {
     $script:Git = Find-JoyTool 'git'
     $script:Gh = Find-JoyTool 'gh'
     $env:PATH = ([IO.Path]::GetDirectoryName($script:Git)) + ';' + ([IO.Path]::GetDirectoryName($script:Gh)) + ';' + $env:PATH
-    $auth = Invoke-JoyGh -Arguments @('auth', 'status', '--hostname', 'github.com') -Allowed @(0, 1)
+    # auth status fails if any saved account has expired, even when the active
+    # account works. Check the identity that will actually publish instead.
+    $auth = Invoke-JoyGh -Arguments @('api', 'user') -Allowed @(0, 1)
     if ($auth.ExitCode -ne 0) {
         Write-Host 'Complete the GitHub browser sign-in, then this publisher will continue.'
         & $script:Gh auth login --hostname github.com --git-protocol https --web --scopes repo,read:org,workflow
