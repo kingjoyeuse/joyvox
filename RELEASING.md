@@ -18,7 +18,7 @@ The default destination is **the authenticated account / joyvox**, with
 of source files, creates a source commit if needed, pushes `main` and the
 version tag, and publishes a release with:
 
-- `joyvox-4.2.4-windows-x64-portable.zip`
+- `joyvox-4.2.5-windows-x64-portable.zip`
 - `SHA256SUMS.txt`
 
 The source manifest remains with the local build for verification. Runtime data,
@@ -89,7 +89,7 @@ replaces the old source when the kit is extracted over a 4.2.0 checkout.
 For a new release, update root `VERSION`, the backend VERSION in
 `app/joyvox_core.py`, the version constant in `gui/model.go`, and the assembly
 version in `gui/joyvox.manifest`. Update release notes/docs and rebuild. The
-publisher derives the tag from VERSION, for example `v4.2.4`. Never repurpose an
+publisher derives the tag from VERSION, for example `v4.2.5`. Never repurpose an
 already-published version for changed source or binaries.
 
 To run the focused checks:

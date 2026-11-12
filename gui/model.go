@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const version = "4.2.4"
+const version = "4.2.5"
 
 //go:embed settings.json
 var settingJSON string

@@ -1,4 +1,4 @@
-# JoyVox 4.2.4
+# JoyVox 4.2.5
 
 **Speech to in-game chat for Quake 2 engine games.**
 
@@ -7,7 +7,7 @@ text chat. Recognition runs on your computer. The native Windows `joyvox.exe`
 opens without Python already installed; heavy recognition components load only
 when requested.
 
-## Development launcher layout
+## Launcher layout
 
 The dependency/readiness area has a thin grey outline. The autoexec-chain status
 sits directly below the dependency line, in the same small font as the download
@@ -34,7 +34,7 @@ recognition dependencies or downloading cached models again.
 ## Update an existing installation
 
 Close JoyVox. Replace **joyvox.exe** in its existing folder with the executable
-from `joyvox-4.2.4-windows-x64-portable.zip`, then reopen it. Do not delete your
+from `joyvox-4.2.5-windows-x64-portable.zip`, then reopen it. Do not delete your
 configuration, dictionary, `.joyvox` folder, or voice-model cache.
 
 For the complete development/publishing update, extract the source kit under
@@ -184,7 +184,7 @@ service. Downloading setup packages and uncached models needs Internet access.
 ## Source, build, and publication
 
 Double-click **Publish-to-GitHub.cmd** in the complete source kit to publish
-version **v4.2.4** with the prepared release ZIP/checksums. It defaults to a private
+version **v4.2.5** with the prepared release ZIP/checksums. It defaults to a private
 `joyvox` repository under the signed-in account. Nothing is published by
 opening the app. Live settings, dictionaries, runtime files, models and recordings
 are excluded. See [RELEASING.md](RELEASING.md) for the existing publication flow.

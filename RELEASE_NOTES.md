@@ -1,29 +1,11 @@
-# JoyVox 4.2.4
+# JoyVox 4.2.5
 
-UI update from 4.2.3; no recognition-dependency changes.
+This release redesigns the launcher interface.
 
-- Light, readable NVIDIA checkbox text using native behavior with explicit drawing.
-- Consistent dark-cerulean microphone/model dropdowns, including their arrows and lists.
-- Grey Install / repair button when setup is ready; brighter blue when required.
-- Closer, bottom-aligned “by Joyeuse” credit, placed using the rendered header width.
-- Narrower, right-aligned model selector with `auto (resolved-model)` display.
-- Auto display refreshes after dependency checks/installation and when the actual
-  running model is reported. Configuration still saves the plain `auto` value.
-- One brief description of the selected model; no duplicated Auto-selection explanation.
-- Five-column, two-row quick-bind grid: small labels above key-only buttons.
-- Labels: Hold to talk; Autochat target: public; Autochat target: team;
-  Send message: public; Send message: team.
-- No successful-bind-update status messages; capture prompts and errors remain.
-- Gear icon + Advanced config; play triangle + Start JoyVox; stop square + Stop.
-- Small autoexec status moved below dependencies, inside a thin grey outlined box
-  containing the dependency/download information.
-- Existing icon, exec-chain detection, dictionary, voice-model cache and settings retained.
+- Start, Stop, and advanced settings are grouped in the upper-right corner.
+- The voice-model picker stays visible and displays descriptions for the available models. Custom models remain available through advanced settings.
+- Folder and microphone-refresh actions use matching icon buttons.
+- Activity text is smaller and follows new entries until you scroll up.
+- Bindings and game settings are rearranged, and the game is launched separately.
 
-Update: close JoyVox and replace joyvox.exe in its existing folder. Keep .joyvox,
-joyvox_config.cfg, joyvox_dictionary.cfg and downloaded models. The full source
-kit also includes build sources, this executable, prepared release assets and
-the existing GitHub publisher. Nothing has been published to GitHub by this build.
-
-Validation: Windows AMD64 cross-build completed. 81 backend tests and 12 launcher
-logic tests passed. These do not establish native Windows visual, audio or GPU
-validation: the build environment did not run the Windows GUI.
+To update, close JoyVox and replace `joyvox.exe` in your existing folder with the executable from the portable ZIP. Keep your configuration, dictionary, runtime, and downloaded models.

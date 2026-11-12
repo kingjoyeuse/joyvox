@@ -8,7 +8,7 @@ import threading
 import unicodedata
 from pathlib import Path
 
-VERSION = "4.2.4"
+VERSION = "4.2.5"
 
 DEFAULT_CONFIG = {
     "STT_LISTEN": "mouse4", "STT_KEY": "j", "STT_TEAMKEY": "k",
