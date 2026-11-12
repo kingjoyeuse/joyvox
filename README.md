@@ -7,28 +7,27 @@ text chat. Recognition runs on your computer. The native Windows `joyvox.exe`
 opens without Python already installed; heavy recognition components load only
 when requested.
 
-## UI update in 4.2.4
+## Development launcher layout
 
 The dependency/readiness area has a thin grey outline. The autoexec-chain status
 sits directly below the dependency line, in the same small font as the download
 information. The NVIDIA checkbox text is drawn in the light foreground color.
-Inputs and both combo boxes use the same dark cerulean surface, including their
-selection fields, list rows, and arrow areas.
+Inputs, the microphone selector, and the model list use a dark cerulean surface.
 
-The right-aligned model selector displays `auto (large-v3-turbo)` or the resolved
-CPU fallback. It refreshes when the dependency check finishes, including after
-CUDA setup; the actual running model also updates it if inference falls back.
-The saved value remains `auto`. The short grey-italic description describes only
-the chosen model, without repeating automatic-selection rules. Custom model names
-and directories are still accepted.
+The always-visible model picker displays `auto (large-v3-turbo)` or the resolved
+CPU fallback, and shows descriptions for the other choices. It refreshes when the
+dependency check finishes or the running model falls back. The saved value remains
+`auto`. Custom model names and directories remain available through the gear's
+advanced settings and appear as an additional choice when configured.
 
-Quick binds are five borderless columns with small labels above key-only buttons.
+The five bindings have small labels above key-only buttons.
 Click a button to capture a key; Esc cancels. Successful changes update the button
-without replacing the existing readiness/status message. Advanced config has a
-gear icon; Start and Stop have play/stop icons. The author credit is measured and
-placed 10 logical pixels after the header, bottom aligned.
+without replacing the existing readiness/status message. The gear, Stop, and
+Start controls sit in the upper-right corner. Folder buttons select paths, and
+the circular-arrow button refreshes microphones. Activity follows new entries
+until the user scrolls up, then resumes following when returned to the bottom.
 
-Dictionary and voice-model cache paths remain in **Advanced config**, with their
+Dictionary and voice-model cache paths remain in **Advanced settings**, with their
 Browse controls. This UI update does not require reinstalling already working
 recognition dependencies or downloading cached models again.
 
@@ -61,11 +60,9 @@ the active native GUI is now Go/Win32, not C++.
    NVIDIA support) are missing. It remains available for a deliberate repair.
    Approximate downloads appear before setup. Recognition models download on Start,
    not when this repair button is clicked.
-5. Choose your microphone by name. **Refresh** queries Windows inputs directly,
+5. Choose your microphone by name. The refresh icon queries Windows inputs directly,
    then uses PyAudio to show verified numbered inputs when available.
-6. Click **Start JoyVox**, wait for **READY**, then **Launch {game name}**.
-   The selected EXE is launched from its own directory; choosing an output/mod
-   folder does not add game-specific command-line arguments.
+6. Click **Start JoyVox**, wait for **READY**, then launch the game separately.
 
 If the game is already running, enter `exec joyvox.cfg` in its console once,
 or use your configured bindings filename. A game launched after repair normally
@@ -129,7 +126,7 @@ commands through other CFG files, with cycle protection.
 Commented-out examples or a command embedded inside an alias do not count.
 
 A missing/unreadable autoexec entry appears **red**, but does **not** disable
-Start JoyVox or Launch. Other genuine prerequisites, such as missing recognition
+starting JoyVox. Other genuine prerequisites, such as missing recognition
 packages or a missing output folder, still have to be corrected for recognition.
 The game can launch independently. UTF-16 autoexec files are not rewritten;
 convert them to the plain-text encoding your game uses first.
@@ -142,7 +139,7 @@ convert them to the plain-text encoding your game uses first.
 | F5 / F6 | Choose public / team for later recordings |
 | J / K | Manually send prepared public / team text |
 
-**Advanced config** (gear icon) opens all variables in a separate resizable window. The
+**Advanced settings** (gear icon) opens all variables in a separate resizable window. The
 Value column is compact; Description fills the actual remaining client width,
 including allowance for the vertical scrollbar, without a horizontal scrollbar
 at the initial layout. Select a row to edit its full value below the table.

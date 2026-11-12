@@ -36,9 +36,7 @@ const (
 	idMic
 	idMicRefresh
 	idModel
-	idModelInfo
 	idConfig
-	idLaunch
 	idStart
 	idStop
 	idLog
@@ -102,6 +100,7 @@ type AppState struct {
 	capturingBind                                                                                                                     int
 	editorState                                                                                                                       *EditorState
 	depsChecked, modelUpdating                                                                                                        bool
+	logFollowing, logUpdating                                                                                                         bool
 	autoModelLabel, actualModel                                                                                                       string
 	bindPreviousStatus                                                                                                                string
 	bindPreviousError                                                                                                                 bool
@@ -137,6 +136,10 @@ func control(parent uintptr, class, text string, style uint32, id int, ex uint32
 		}
 	case "EDIT":
 		disableControlTheme(h)
+	case "LISTBOX":
+		disableControlTheme(h)
+	case "RICHEDIT50W":
+		themeActivity(h)
 	}
 	return h
 }
@@ -165,7 +168,7 @@ func setFonts() {
 			f = app.logFont
 		case idEstimate, idAutoexec:
 			f = app.smallFont
-		case idModelInfo, idByline:
+		case idByline:
 			f = app.smallItalicFont
 		}
 		setFont(h, f)
@@ -183,10 +186,13 @@ func setFonts() {
 		}
 		setFont(h, f)
 	}
-	for _, id := range []int{idMic, idModel} {
+	for _, id := range []int{idMic} {
 		if h := app.controls[id]; h != 0 {
 			sizeCombo(h)
 		}
+	}
+	if h := app.controls[idModel]; h != 0 {
+		send(h, 0x1A0, 0, uintptr(sc(28))) // LB_SETITEMHEIGHT
 	}
 	for _, h := range old {
 		if h != 0 {
@@ -201,54 +207,52 @@ func layout() {
 	r := getClient(app.window)
 	w, h := int(r.Right)*96/app.dpi, int(r.Bottom)*96/app.dpi
 	inner := w - 48
-	place(app.controls[idLogo], 24, 14, 52, 52)
+	place(app.controls[idLogo], 24, 24, 52, 52)
 	// Measure the real caption instead of reserving 260px of empty space.
 	titleSize := measureText(app.window, app.titleFont, getText(app.labels["title"]))
 	bySize := measureText(app.window, app.smallItalicFont, "by Joyeuse")
 	titleW := (int(titleSize.X)*96 + app.dpi - 1) / app.dpi
-	place(app.labels["title"], 88, 14, titleW+2, 43)
-	move(app.controls[idByline], sc(88)+int(titleSize.X)+sc(10), sc(9)+int(titleSize.Y-bySize.Y), int(bySize.X)+sc(4), int(bySize.Y)+sc(3))
-	place(app.labels["tagline"], 88, 55, inner-64, 22)
+	place(app.labels["title"], 88, 24, titleW+2, 43)
+	move(app.controls[idByline], sc(88)+int(titleSize.X)+sc(10), sc(19)+int(titleSize.Y-bySize.Y), int(bySize.X)+sc(4), int(bySize.Y)+sc(3))
+	gearX := w - 325
+	place(app.labels["tagline"], 88, 65, max(0, gearX-98), 22)
+	place(app.controls[idConfig], gearX, 38, 36, 36)
+	place(app.controls[idStop], w-277, 38, 96, 36)
+	place(app.controls[idStart], w-169, 38, 145, 36)
+	place(app.controls[idRun], max(24, w-444), 85, min(420, inner), 24)
 
-	app.dependencyRect = Rect{int32(sc(24)), int32(sc(92)), int32(sc(w - 24)), int32(sc(238))}
-	place(app.controls[idDeps], 38, 105, inner-292, 23)
-	place(app.controls[idAutoexec], 38, 131, inner-292, 30)
-	place(app.controls[idInstall], w-277, 105, 239, 35)
-	place(app.controls[idGPU], 38, 165, inner-28, 23)
-	place(app.controls[idEstimate], 38, 194, inner-28, 32)
+	app.dependencyRect = Rect{int32(sc(24)), int32(sc(132)), int32(sc(w - 24)), int32(sc(278))}
+	place(app.controls[idDeps], 38, 145, inner-292, 23)
+	place(app.controls[idAutoexec], 38, 171, inner-292, 30)
+	place(app.controls[idInstall], w-277, 145, 239, 35)
+	place(app.controls[idGPU], 38, 205, inner-28, 23)
+	place(app.controls[idEstimate], 38, 234, inner-28, 32)
 
+	ids := []int{idBindTalk, idBindPublicAuto, idBindTeamAuto, idBindPublicSend, idBindTeamSend}
+	for i, c := range quickBindColumns(24, inner, 12) {
+		place(app.labels["bind-"+strconv.Itoa(i)], c.X, 320, c.Width, 17)
+		place(app.controls[ids[i]], c.X, 340, c.Width, 32)
+	}
+
+	modelW := inner * 45 / 100
+	modelX := w - 24 - modelW
+	leftW := modelX - 24 - 20
+	const iconW, iconGap = 35, 8
 	for i, id := range []int{idExe, idOutput} {
-		y := 254 + i*57
-		place(app.labels[strconv.Itoa(id)], 24, y, inner, 20)
-		place(app.controls[id], 24, y+21, inner-95, 29)
+		y := 424 + i*84
+		place(app.labels[strconv.Itoa(id)], 24, y, leftW, 20)
+		place(app.controls[id], 24, y+21, leftW-iconW-iconGap, 29)
 		browse := idExeBrowse
 		if id == idOutput {
 			browse = idOutputBrowse
 		}
-		place(app.controls[browse], w-111, y+21, 87, 29)
+		place(app.controls[browse], 24+leftW-iconW, y+21, iconW, 29)
 	}
-	// Keep the model selector compact and right aligned; give microphones more room.
-	modelW := min(310, inner*36/100)
-	modelX := w - 24 - modelW
-	micW := modelX - 24 - 24
-	place(app.labels["mic"], 24, 378, micW, 20)
-	place(app.labels["model"], modelX, 378, modelW, 20)
-	place(app.controls[idMic], 24, 399, micW-85, 270)
-	place(app.controls[idMicRefresh], 24+micW-77, 399, 77, 29)
-	place(app.controls[idModel], modelX, 399, modelW, 260)
-	place(app.controls[idModelInfo], modelX, 433, modelW, 42)
-
-	place(app.labels["binds"], 24, 485, inner, 20)
-	ids := []int{idBindTalk, idBindPublicAuto, idBindTeamAuto, idBindPublicSend, idBindTeamSend}
-	for i, c := range quickBindColumns(24, inner, 12) {
-		place(app.labels["bind-"+strconv.Itoa(i)], c.X, 513, c.Width, 17)
-		place(app.controls[ids[i]], c.X, 534, c.Width, 32)
-	}
-	place(app.controls[idConfig], 24, 590, 164, 36)
-	place(app.controls[idLaunch], 200, 590, min(260, inner-426), 36)
-	place(app.controls[idStart], w-277, 590, 145, 36)
-	place(app.controls[idStop], w-120, 590, 96, 36)
-	place(app.controls[idRun], 24, 638, inner, 32)
+	place(app.labels["mic"], 24, 592, leftW, 20)
+	place(app.controls[idMic], 24, 613, leftW-iconW-iconGap, 270)
+	place(app.controls[idMicRefresh], 24+leftW-iconW, 613, iconW, 29)
+	place(app.labels["model"], modelX, 424, modelW, 20)
+	move(app.controls[idModel], sc(modelX), sc(445), sc(modelW), 7*sc(28))
 	place(app.labels["activity"], 24, 684, inner-95, 22)
 	place(app.controls[idClear], w-104, 679, 80, 28)
 	place(app.controls[idLog], 24, 714, inner, max(24, h-738))
@@ -259,16 +263,54 @@ func setRun(text string, isError bool) {
 	setText(app.controls[idRun], text)
 	invalidate(app.controls[idRun])
 }
+
+type scrollInfo struct {
+	Size, Mask uint32
+	Min, Max   int32
+	Page       uint32
+	Pos, Track int32
+}
+
+type charRange struct{ Min, Max int32 }
+
+func logAtBottom(h uintptr) bool {
+	info := scrollInfo{Size: uint32(unsafe.Sizeof(scrollInfo{})), Mask: 0x7}               // SIF_RANGE | SIF_PAGE | SIF_POS
+	ok, _, _ := user32.NewProc("GetScrollInfo").Call(h, 1, uintptr(unsafe.Pointer(&info))) // SB_VERT
+	if ok == 0 {
+		return true
+	}
+	// Rich Edit can report the bottom one pixel short of the documented
+	// nMax-nPage+1 scrollbar limit.
+	last := int64(info.Max) - int64(info.Page)
+	return int64(info.Pos) >= max(int64(info.Min), last)
+}
+
 func appendLog(text string) {
 	if text == "" {
 		return
 	}
 	h := app.controls[idLog]
-	old := getText(h)
-	if len(old) > 160000 {
-		send(h, 0xB1, 0, uintptr(len(old)-120000))
+	follow := app.logFollowing || logAtBottom(h)
+	app.logUpdating = true
+	defer func() { app.logUpdating = false }()
+	var selection charRange
+	var scroll Point
+	firstLine := int32(send(h, 0xCE, 0, 0))                // EM_GETFIRSTVISIBLELINE
+	send(h, 0x434, 0, uintptr(unsafe.Pointer(&selection))) // EM_EXGETSEL
+	send(h, 0x4DD, 0, uintptr(unsafe.Pointer(&scroll)))    // EM_GETSCROLLPOS
+	send(h, 0xB1, ^uintptr(0), ^uintptr(0))                // EM_SETSEL at end
+	var end charRange
+	send(h, 0x434, 0, uintptr(unsafe.Pointer(&end)))
+	if follow && end.Max > 160000 {
+		// Defer pruning while the user is reading older activity. Character
+		// positions here are Rich Edit positions, not UTF-8 byte counts.
+		removed := end.Max - 120000
+		send(h, 0xB1, 0, uintptr(removed))
 		p := up("")
 		send(h, 0xC2, 0, uintptr(unsafe.Pointer(p)))
+		runtime.KeepAlive(p)
+		selection.Min = max(0, selection.Min-removed)
+		selection.Max = max(0, selection.Max-removed)
 	}
 	text = strings.ReplaceAll(strings.ReplaceAll(text, "\r\n", "\n"), "\r", "\n")
 	text = strings.ReplaceAll(text, "\n", "\r\n")
@@ -287,7 +329,19 @@ func appendLog(text string) {
 	p := up(text)
 	send(h, 0xC2, 0, uintptr(unsafe.Pointer(p)))
 	runtime.KeepAlive(p)
-	send(h, 0xB7, 0, 0)
+	send(h, 0x437, 0, uintptr(unsafe.Pointer(&selection))) // EM_EXSETSEL
+	if follow {
+		send(h, 0x115, 7, 0) // WM_VSCROLL, SB_BOTTOM
+		app.logFollowing = true
+	} else {
+		send(h, 0x4DE, 0, uintptr(unsafe.Pointer(&scroll))) // EM_SETSCROLLPOS
+		// Rich Edit may truncate large pixel offsets. Restore the original
+		// visible line if that happens on a long log.
+		currentLine := int32(send(h, 0xCE, 0, 0))
+		if firstLine != currentLine {
+			send(h, 0xB6, 0, uintptr(int64(firstLine-currentLine))) // EM_LINESCROLL
+		}
+	}
 }
 func isRunning(kind string) bool { return app.jobs[kind] != nil }
 func coreReady() bool            { return app.deps["python"] == "ready" && app.deps["core"] == "ready" }
@@ -380,8 +434,6 @@ func refreshButtons() {
 	enabled(app.controls[idStart], app.ready && coreReady() && validExe && validOutput && fieldsUnlocked() && !isRunning("status"))
 	enabled(app.controls[idStop], isRunning("backend") && !app.stopping && !app.closing)
 	enabled(app.controls[idInstall], app.ready && fieldsUnlocked() && !isRunning("status"))
-	enabled(app.controls[idLaunch], validExe && !app.closing)
-	setText(app.controls[idLaunch], "Launch "+gameName(exe))
 	if isRunning("install") {
 		setText(app.controls[idInstall], "Installing dependencies…")
 	} else {
@@ -789,27 +841,6 @@ func stopBackend() {
 	setRun("Stopping JoyVox…", false)
 	refreshButtons()
 }
-func launchGame() {
-	exe := resolve(app.root, getText(app.controls[idExe]))
-	if !fileExists(exe) {
-		alert("Choose an existing game executable.")
-		return
-	}
-	if !isRunning("backend") && !saveMain(false) {
-		return
-	}
-	if app.autoError {
-		appendLog("ERROR: autoexec.cfg entry is missing or unreadable; launching the game is still allowed.")
-	}
-	verb, path, dir := up("open"), up(exe), up(filepath.Dir(exe))
-	r, _, _ := shell32.NewProc("ShellExecuteW").Call(app.window, uintptr(unsafe.Pointer(verb)), uintptr(unsafe.Pointer(path)), 0, uintptr(unsafe.Pointer(dir)), 1)
-	runtime.KeepAlive(verb)
-	runtime.KeepAlive(path)
-	runtime.KeepAlive(dir)
-	if r <= 32 {
-		setRun("ERROR: Windows could not launch the selected game.", true)
-	}
-}
 func processEvents() {
 	for {
 		select {
@@ -916,7 +947,10 @@ func createMainControls() {
 	label("title", "JoyVox  "+version)
 	setFont(app.labels["title"], app.titleFont)
 	label("tagline", "Speech to in-game chat for Quake 2 engine games.")
-	label("binds", "Quick binds")
+	add(idConfig, "BUTTON", "Advanced settings", tabstop, 0)
+	add(idStop, "BUTTON", "Stop", tabstop|0x0000000B, 0)
+	add(idStart, "BUTTON", "Start JoyVox", tabstop|0x0000000B|1, 0)
+	add(idRun, "STATIC", "Preparing launcher…", 2, 0) // SS_RIGHT
 	for i, text := range []string{"Hold to talk", "Autochat target: public", "Autochat target: team", "Send message: public", "Send message: team"} {
 		h := control(app.window, "STATIC", text, 1, 0, 0) // centered, borderless
 		app.labels["bind-"+strconv.Itoa(i)] = h
@@ -930,6 +964,11 @@ func createMainControls() {
 	}
 	add(idEstimate, "STATIC", "", 0, 0)
 	setFont(app.controls[idEstimate], app.smallFont)
+	add(idBindTalk, "BUTTON", "", tabstop, 0)
+	add(idBindPublicAuto, "BUTTON", "", tabstop, 0)
+	add(idBindTeamAuto, "BUTTON", "", tabstop, 0)
+	add(idBindPublicSend, "BUTTON", "", tabstop, 0)
+	add(idBindTeamSend, "BUTTON", "", tabstop, 0)
 	for _, field := range []struct {
 		ID, Browse int
 		Title      string
@@ -940,7 +979,7 @@ func createMainControls() {
 		label(strconv.Itoa(field.ID), field.Title)
 		add(field.ID, "EDIT", "", tabstop|0x80, 0x200)
 		send(app.controls[field.ID], 0xC5, 32767, 0)
-		add(field.Browse, "BUTTON", "Browse…", tabstop, 0)
+		add(field.Browse, "BUTTON", "Browse for "+strings.ToLower(field.Title), tabstop, 0)
 	}
 	cue := up("Enter the path to your Game executable")
 	send(app.controls[idExe], 0x1501, 1, uintptr(unsafe.Pointer(cue)))
@@ -948,33 +987,19 @@ func createMainControls() {
 	label("mic", "Microphone")
 	label("model", "Voice recognition model")
 	add(idMic, "COMBOBOX", "", tabstop|3|0x200000, 0)
-	add(idMicRefresh, "BUTTON", "Refresh", tabstop, 0)
-	add(idModel, "COMBOBOX", "", tabstop|2|0x200000, 0)
-	for _, model := range []string{"auto", "large-v3-turbo", "small.en", "base.en", "medium.en", "tiny.en", "large-v3"} {
-		addString(app.controls[idModel], model)
-	}
-	send(app.controls[idModel], 0x160, uintptr(sc(620)), 0)
-	add(idModelInfo, "STATIC", "", 0, 0)
-	setFont(app.controls[idModelInfo], app.smallItalicFont)
+	add(idMicRefresh, "BUTTON", "Refresh microphones", tabstop, 0)
+	// A native single-selection list keeps the options visible and keyboard accessible.
+	add(idModel, "LISTBOX", "", tabstop|0x200000|0x151, 0) // LBS_NOTIFY | OWNERDRAWFIXED | HASSTRINGS | NOINTEGRALHEIGHT
 	setFont(app.controls[idByline], app.smallItalicFont)
-	add(idBindTalk, "BUTTON", "", tabstop, 0)
-	add(idBindPublicAuto, "BUTTON", "", tabstop, 0)
-	add(idBindTeamAuto, "BUTTON", "", tabstop, 0)
-	add(idBindPublicSend, "BUTTON", "", tabstop, 0)
-	add(idBindTeamSend, "BUTTON", "", tabstop, 0)
 	add(idAutoexec, "STATIC", "", 0, 0)
 	setFont(app.controls[idAutoexec], app.smallFont)
-	add(idConfig, "BUTTON", "Advanced config", tabstop, 0)
-	add(idLaunch, "BUTTON", "Launch game", tabstop, 0)
-	add(idStart, "BUTTON", "Start JoyVox", tabstop|0x0000000B|1, 0)
-	add(idStop, "BUTTON", "Stop", tabstop|0x0000000B, 0)
-	add(idRun, "STATIC", "Preparing launcher…", 0, 0)
 	label("activity", "Activity")
 	add(idClear, "BUTTON", "Clear", tabstop, 0)
+	app.logFollowing = true
 	add(idLog, "RICHEDIT50W", "", tabstop|0x200000|4|0x40|0x800, 0x200)
 	setFont(app.controls[idLog], app.logFont)
 	send(app.controls[idLog], 0x443, 0, color(19, 28, 39))
-	send(app.controls[idLog], 0x435, 0, 250000)
+	send(app.controls[idLog], 0x435, 0, 16*1024*1024)
 	app.config = parseConfig(nil, filepath.Join(app.root, "joyvox_config.cfg"), true)
 	fillMics(nil, "auto")
 	setSelectedModel("auto")
@@ -1220,7 +1245,7 @@ func mainProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 		paintMainFrame(hwnd)
 		return 0
 	case 0x2C: // WM_MEASUREITEM
-		if measureComboItem(lparam) {
+		if measureComboItem(lparam) || measureModelItem(lparam) {
 			return 1
 		}
 		return 0
@@ -1268,7 +1293,7 @@ func mainProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 			}
 			return 0
 		}
-		if id == idModel && (code == 1 || code == 5) {
+		if id == idModel && code == 1 { // LBN_SELCHANGE
 			if app.modelUpdating {
 				return 0
 			}
@@ -1295,10 +1320,9 @@ func mainProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 			startBackend()
 		case idStop:
 			stopBackend()
-		case idLaunch:
-			launchGame()
 		case idClear:
 			setText(app.controls[idLog], "")
+			app.logFollowing = true
 		case idBindTalk, idBindPublicAuto, idBindTeamAuto, idBindPublicSend, idBindTeamSend:
 			beginBindCapture(id)
 		}
@@ -1336,7 +1360,7 @@ func mainProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 		}
 		ink := fg
 		switch lparam {
-		case app.labels["tagline"], app.controls[idEstimate], app.labels["activity"], app.controls[idModelInfo], app.controls[idByline]:
+		case app.labels["tagline"], app.controls[idEstimate], app.labels["activity"], app.controls[idByline]:
 			ink = muted
 		case app.controls[idDeps]:
 			ink = blue
@@ -1373,7 +1397,7 @@ func mainProc(hwnd uintptr, msg uint32, wparam, lparam uintptr) uintptr {
 		gdi32.NewProc("SetBkColor").Call(wparam, cerulean)
 		return app.inputBackground
 	case 0x2B:
-		if drawOwnerButton(lparam) || drawComboItem(lparam) {
+		if drawOwnerButton(lparam) || drawComboItem(lparam) || drawModelItem(lparam) {
 			return 1
 		}
 		return 0

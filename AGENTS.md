@@ -12,16 +12,15 @@
 - Use the model explicitly selected by the user. Do not restart a model-selection discussion during an implementation request.
 - GUI automation still requires the user's explicit consent. Compilation and logic tests do not constitute visual or in-game verification.
 
-## Remaining UI work
+## Interface
 
 Match the user's second reference image. Header controls go in the upper-right in this order: gear, Stop, Start. Runtime status goes below them. Dependencies come next, then the five binding buttons without the Quick binds heading. Below that, put the executable, output folder, and microphone in a left column, and an always-visible voice-model picker with descriptions in the right column. Activity stays at the bottom.
 
-- Use equal-width folder and refresh icon buttons.
-- Remove the Launch game button.
-- Replace the model dropdown with an always-visible picker, preserving auto resolution, selected model persistence, keyboard navigation, and disabled state while running.
-- Append activity at the bottom only if already at the bottom; preserve the user's position while reading older activity.
-- Byline up 5 logical pixels, tagline down 3, and activity font from 13 to 11 were already committed in `8faafaf`. Verify these in the final layout rather than applying them twice.
-- Build and verify the completed changes, provide the root shortcut, and clearly distinguish compiled/tested behavior from visual verification.
+- The three path/microphone action buttons have the same width and use folder or refresh icons. The game is launched separately.
+- The always-visible model picker retains custom saved values, auto resolution, keyboard navigation, and the disabled state while recognition runs.
+- Activity follows until the user scrolls away, resumes at the bottom, and preserves the reader's position while scrolled up.
+- Byline, tagline, and activity-font adjustments were committed in `8faafaf` and integrated into the new header.
+- Native control tests and compilation do not replace a visual check of the launcher or in-game validation.
 
 ## Recurring tooling issues
 

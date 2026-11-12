@@ -39,11 +39,35 @@ type MeasureItemStruct struct {
 	ItemData                                      uintptr
 }
 
-var checkboxCallback, comboCallback uintptr
+var checkboxCallback, comboCallback, activityCallback uintptr
 
 func init() {
 	checkboxCallback = syscall.NewCallback(checkboxSubclassProc)
 	comboCallback = syscall.NewCallback(comboSubclassProc)
+	activityCallback = syscall.NewCallback(activitySubclassProc)
+}
+
+func themeActivity(h uintptr) {
+	comctl32.NewProc("SetWindowSubclass").Call(h, activityCallback, 1, 0)
+}
+
+func activitySubclassProc(h uintptr, msg uint32, w, l, id, ref uintptr) uintptr {
+	if msg == wmNCDestroy {
+		comctl32.NewProc("RemoveWindowSubclass").Call(h, activityCallback, id)
+		return defSubclass(h, msg, w, l)
+	}
+	result := defSubclass(h, msg, w, l)
+	if !app.logUpdating {
+		switch msg {
+		case 0x115, 0x20A, 0x100, 0x202: // vertical scroll, wheel, key, mouse release
+			app.logFollowing = logAtBottom(h)
+		case 0x200: // selection drag can scroll the edit control
+			if w&1 != 0 {
+				app.logFollowing = logAtBottom(h)
+			}
+		}
+	}
+	return result
 }
 
 func defSubclass(h uintptr, msg uint32, w, l uintptr) uintptr {
@@ -215,6 +239,17 @@ func measureComboItem(l uintptr) bool {
 	m.ItemHeight = uint32(sc(28))
 	return true
 }
+func measureModelItem(l uintptr) bool {
+	if l == 0 {
+		return false
+	}
+	m := (*MeasureItemStruct)(unsafe.Pointer(l))
+	if m.CtlType != 2 || int(m.CtlID) != idModel { // ODT_LISTBOX
+		return false
+	}
+	m.ItemHeight = uint32(sc(28))
+	return true
+}
 func comboString(h uintptr, index uint32) string {
 	if index == ^uint32(0) {
 		return getText(h)
@@ -248,22 +283,50 @@ func drawComboItem(l uintptr) bool {
 	r.Left += int32(sc(7))
 	r.Right -= int32(sc(5))
 	text := comboString(di.HwndItem, di.ItemID)
-	// Model list may expand beyond the narrow selection field. Its names keep
-	// the normal font; descriptions use smaller grey italics, without a dash.
-	if int(di.CtlID) == idModel && !isField && canonicalModel(text) != "auto" {
-		nameW := measureTextDC(di.HDC, app.font, text).X
-		nameRect := r
-		nameRect.Right = min(r.Right, r.Left+nameW+int32(sc(2)))
-		drawText(di.HDC, app.font, text, nameRect, ink, 0x20|0x4|0x8000)
-		r.Left += nameW + int32(sc(14))
-		if r.Left < r.Right {
-			drawText(di.HDC, app.smallItalicFont, modelDescription(text), r, muted, 0x20|0x4|0x8000)
-		}
-	} else {
-		drawText(di.HDC, app.font, text, r, ink, 0x20|0x4|0x8000)
-	}
+	drawText(di.HDC, app.font, text, r, ink, 0x20|0x4|0x8000)
 	if di.ItemState&0x10 != 0 {
 		r = inset(di.RcItem, 2)
+		user32.NewProc("DrawFocusRect").Call(di.HDC, uintptr(unsafe.Pointer(&r)))
+	}
+	return true
+}
+
+func drawModelItem(l uintptr) bool {
+	if l == 0 {
+		return false
+	}
+	di := (*DrawItemStruct)(unsafe.Pointer(l))
+	if di.CtlType != 2 || int(di.CtlID) != idModel {
+		return false
+	}
+	bg, ink := cerulean, fg
+	if di.ItemState&1 != 0 { // ODS_SELECTED
+		bg = ceruleanHi
+	}
+	if !isEnabled(di.HwndItem) {
+		ink = muted
+	}
+	fillRectColor(di.HDC, di.RcItem, bg)
+	if di.ItemID != ^uint32(0) {
+		r := di.RcItem
+		r.Left += int32(sc(7))
+		r.Right -= int32(sc(5))
+		name := modelListString(di.HwndItem, int(di.ItemID))
+		if canonicalModel(name) == "auto" {
+			drawText(di.HDC, app.font, name, r, ink, 0x20|0x4|0x8000)
+		} else {
+			nameW := measureTextDC(di.HDC, app.font, name).X
+			nameRect := r
+			nameRect.Right = min(r.Right, r.Left+nameW+int32(sc(2)))
+			drawText(di.HDC, app.font, name, nameRect, ink, 0x20|0x4|0x8000)
+			r.Left += nameW + int32(sc(14))
+			if r.Left < r.Right {
+				drawText(di.HDC, app.smallItalicFont, modelDescription(name), r, muted, 0x20|0x4|0x8000)
+			}
+		}
+	}
+	if di.ItemState&0x10 != 0 { // ODS_FOCUS
+		r := inset(di.RcItem, 2)
 		user32.NewProc("DrawFocusRect").Call(di.HDC, uintptr(unsafe.Pointer(&r)))
 	}
 	return true
@@ -330,6 +393,16 @@ func buttonIcon(dc uintptr, id int, x, y, size int32, ink, bg uintptr) {
 		fillPolygon(dc, points, ink)
 		center := size / 4
 		fillEllipse(dc, Rect{x + size/2 - center, y + size/2 - center, x + size/2 + center + 1, y + size/2 + center + 1}, bg)
+	} else if id == idExeBrowse || id == idOutputBrowse {
+		stroke := max(1, sc(2))
+		drawLine(dc, []Point{{x + size/10, y + size*2/5}, {x + size/10, y + size/5}, {x + size*2/5, y + size/5}, {x + size/2, y + size*3/10}, {x + size*9/10, y + size*3/10}, {x + size*9/10, y + size*2/5}}, ink, stroke)
+		drawLine(dc, []Point{{x + size/10, y + size*4/5}, {x + size*2/10, y + size*2/5}, {x + size, y + size*2/5}, {x + size*8/10, y + size*4/5}, {x + size/10, y + size*4/5}}, ink, stroke)
+	} else if id == idMicRefresh {
+		stroke := max(1, sc(2))
+		drawLine(dc, []Point{{x + size/5, y + size/2}, {x + size/5, y + size/3}, {x + size*2/5, y + size/6}, {x + size*3/5, y + size/6}, {x + size*4/5, y + size/3}}, ink, stroke)
+		fillPolygon(dc, []Point{{x + size*4/5, y + size/7}, {x + size*9/10, y + size*2/5}, {x + size*3/5, y + size/3}}, ink)
+		drawLine(dc, []Point{{x + size*4/5, y + size/2}, {x + size*4/5, y + size*2/3}, {x + size*3/5, y + size*5/6}, {x + size*2/5, y + size*5/6}, {x + size/5, y + size*2/3}}, ink, stroke)
+		fillPolygon(dc, []Point{{x + size/5, y + size*6/7}, {x + size/10, y + size*3/5}, {x + size*2/5, y + size*2/3}}, ink)
 	}
 }
 func drawOwnerButton(l uintptr) bool {
@@ -342,6 +415,9 @@ func drawOwnerButton(l uintptr) bool {
 	}
 	id := int(di.CtlID)
 	bg, ink := greyBtn, fg
+	if id == idConfig {
+		bg = panel
+	}
 	enabled := isEnabled(di.HwndItem) && di.ItemState&4 == 0
 	if enabled {
 		switch id {
@@ -367,7 +443,9 @@ func drawOwnerButton(l uintptr) bool {
 		ink = muted
 	}
 	fillRectColor(di.HDC, di.RcItem, bg)
-	frameRectColor(di.HDC, di.RcItem, shade(bg, 10))
+	if id != idConfig {
+		frameRectColor(di.HDC, di.RcItem, shade(bg, 10))
+	}
 	font := send(di.HwndItem, 0x31, 0, 0)
 	if font == 0 {
 		font = app.font
@@ -378,11 +456,14 @@ func drawOwnerButton(l uintptr) bool {
 		r.Left++
 	}
 	text := getText(di.HwndItem)
-	if id == idConfig || id == idStart || id == idStop {
-		size, gap := int32(sc(13)), int32(sc(8))
+	if id == idConfig || id == idExeBrowse || id == idOutputBrowse || id == idMicRefresh {
+		size := int32(sc(22))
 		if id == idConfig {
-			size = int32(sc(16))
+			size = int32(sc(24))
 		}
+		buttonIcon(di.HDC, id, (r.Left+r.Right-size)/2, (r.Top+r.Bottom-size)/2, size, ink, bg)
+	} else if id == idStart || id == idStop {
+		size, gap := int32(sc(13)), int32(sc(8))
 		textW := measureTextDC(di.HDC, font, text).X
 		x := r.Left + max(0, (r.Right-r.Left-textW-size-gap)/2)
 		y := (r.Top + r.Bottom - size) / 2

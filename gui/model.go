@@ -346,7 +346,7 @@ func autoexecStatus(folder, filename string) (bool, string) {
 		}
 		return true, "autoexec.cfg reaches exec " + filename + " through another cfg"
 	}
-	return false, "Missing JoyVox exec chain: autoexec.cfg does not reach exec " + filename + ". Use Install / repair. Launch is still allowed."
+	return false, "Missing JoyVox exec chain: autoexec.cfg does not reach exec " + filename + ". Use Install / repair. JoyVox can still start."
 }
 func ensureAutoexec(folder, filename string) (bool, error) {
 	if !dirExists(folder) {
