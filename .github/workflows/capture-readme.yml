@@ -1,0 +1,40 @@
+name: Capture README screenshots
+
+on:
+  push:
+    branches:
+      - docs/readme-screenshots-20261124
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Download the published JoyVox release
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'joyvox.zip'
+          Invoke-WebRequest 'https://github.com/kingjoyeuse/joyvox/releases/download/v4.2.5/joyvox-4.2.5-windows-x64-portable.zip' -OutFile $archive
+          $hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne 'f528b704a7dcebc2c1bc4a5d030d4ada99c1e3d903c3787823b00b4d1d9381ad') { throw 'Release checksum mismatch' }
+          Expand-Archive $archive (Join-Path $env:RUNNER_TEMP 'JoyVox')
+      - name: Capture the actual Windows interface
+        shell: powershell
+        run: |
+          $exe = (Get-ChildItem (Join-Path $env:RUNNER_TEMP 'JoyVox') -Filter joyvox.exe -Recurse | Select-Object -First 1).FullName
+          if (-not $exe) { throw 'JoyVox executable was not found' }
+          ./tools/capture-readme.ps1 -Executable $exe -OutputDirectory (Join-Path $env:GITHUB_WORKSPACE 'screenshots')
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: joyvox-readme-screenshots
+          path: screenshots/
+          if-no-files-found: error
+          retention-days: 7
