@@ -147,7 +147,7 @@ try {
     [void]$app.WaitForInputIdle(30000)
     $main = Wait-JoyVoxWindow $app.Id 'JoyVoxMain421'
     [void][JoyVoxCapture]::ShowWindow($main, 9)
-    [void][JoyVoxCapture]::MoveWindow($main, 40, 40, 940, 910, $true)
+    [void][JoyVoxCapture]::MoveWindow($main, 40, 40, 940, 850, $true)
     [void][JoyVoxCapture]::SetForegroundWindow($main)
     # Wait for the real startup status check; no recognition installation is run.
     $deadline = [DateTime]::UtcNow.AddSeconds(60)
@@ -158,6 +158,10 @@ try {
         if (!$finished) { Start-Sleep -Milliseconds 500 }
     } while (!$finished -and [DateTime]::UtcNow -lt $deadline)
     if (!$finished) { throw "Startup did not complete in time. Actual status: $status" }
+    # Use the app's own Clear button so setup diagnostics do not distract from
+    # the controls being documented. The real readiness/status labels remain.
+    $clear = [JoyVoxCapture]::FindButton($main, 'Clear')
+    if ($clear -ne [IntPtr]::Zero) { [void][JoyVoxCapture]::SendMessage($clear, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) }
     [void][JoyVoxCapture]::UpdateWindow($main)
     Start-Sleep -Milliseconds 600
     $mainSize = [JoyVoxCapture]::SaveWindow($main, (Join-Path $OutputDirectory 'joyvox-main.png'))
@@ -190,6 +194,7 @@ try {
         desktop_resolution = $desktopSize
         desktop_setup = $displaySetup
         initial_state = 'Fresh launch; recognition dependencies and models were not installed; microphone/game were not configured.'
+        activity_panel = 'Cleared using the application Clear button before capture.'
         dependency_status = $status
         main = @{ title = [JoyVoxCapture]::Title($main); size = $mainSize }
         settings = @{ title = [JoyVoxCapture]::Title($settings); size = $settingsSize; selected_setting = 'Names and vocabulary' }
